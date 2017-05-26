@@ -40,31 +40,40 @@ with h5py.File(generate_h5,'r') as hf:
     tem = hf.get('VAE_labels')
     generate_labels = np.array(tem)    
     
-num_classes = 2    
-image_train = np.reshape( np.concatenate( (train_refined_images, generate_images), axis=0) , (-1, 28, 28, 1))
+num_classes = 2
+image_shape_for_train = (-1, 28*28)#(-1, 28, 28, 1)    
+image_train = np.reshape( np.concatenate( (train_refined_images, generate_images), axis=0) , image_shape_for_train)
 label_train = keras.utils.to_categorical( np.concatenate( (train_refined_labels, generate_labels) ) , num_classes)
-image_test = np.reshape(test_refined_images, (-1, 28, 28, 1))
+image_test = np.reshape(test_refined_images, image_shape_for_train)
 label_test = keras.utils.to_categorical(test_refined_labels, num_classes)
 
 #plt.imshow(np.reshape(hh[6400+10], (28,28)))
 #hh = np.concatenate( (train_refined_images, generate_images), axis=0)
 #hh1 = np.concatenate( (train_refined_labels, generate_labels) )
 #parameter of the CNN
-input_shape = (28, 28, 1)
+input_shape = image_shape_for_train[1:]#(28, 28, 1)
 
 batch_size = 128
 epochs = 12
 
+#######CNN########
+#model = Sequential()
+#model.add(Conv2D(32, kernel_size=(3, 3),
+#                 activation='relu',
+#                 input_shape=input_shape))
+#model.add(Conv2D(64, (3, 3), activation='relu'))
+#model.add(MaxPooling2D(pool_size=(2, 2)))
+#model.add(Dropout(0.25))
+#model.add(Flatten())
+#model.add(Dense(128, activation='relu'))
+#model.add(Dropout(0.5))
+#model.add(Dense(num_classes, activation='softmax'))
+#model.summary()
+
+#########MLP##############
 model = Sequential()
-model.add(Conv2D(32, kernel_size=(3, 3),
-                 activation='relu',
-                 input_shape=input_shape))
-model.add(Conv2D(64, (3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
-model.add(Flatten())
-model.add(Dense(128, activation='relu'))
-model.add(Dropout(0.5))
+model.add(Dense(126, activation='relu', input_shape=(784,)))
+model.add(Dropout(0.2))
 model.add(Dense(num_classes, activation='softmax'))
 model.summary()
 #loss=keras.losses.categorical_crossentropy,
