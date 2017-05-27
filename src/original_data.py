@@ -43,8 +43,8 @@ mnist_train_labels = mnist_all.train.labels
 mnist_test_images = mnist_all.test.images
 mnist_test_labels = mnist_all.test.labels
 
-refined_label = [0, 1]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_train_per_label = [400, 6000]
+refined_label = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+num_train_per_label = [400, 5000, 400, 5000, 400, 5000, 400, 5000, 400, 5000]
 train_refined_label_idx = np.array([], dtype = np.uint8)
 test_refined_label_idx = np.array([], dtype = np.uint8)
 for idx, label_value in enumerate(refined_label):
@@ -53,12 +53,31 @@ for idx, label_value in enumerate(refined_label):
     test_refined_one_label_idx = np.where( mnist_test_labels == label_value )[0]
     test_refined_label_idx = np.append(test_refined_label_idx, test_refined_one_label_idx)
 
+#odd_labels = [1, 3, 5, 7, 9]
+#even_labels = [0, 2, 4, 6, 8]
+#num_train_per_label = [400, 5000] #odd labels are minority
+##two_class_labels = [0, 1]
+#
+#odd_label_idx = np.array([], dtype = np.uint8)
+#odd_test_label_idx = np.array([], dtype = np.uint8)
+#for idx, label_value in enumerate(odd_labels):
+#    refined_one_label_idx = np.where( mnist_train_labels == label_value )[0][:num_train_per_label[0]]
+#    odd_label_idx = np.append(odd_label_idx, refined_one_label_idx)
+#    test_refined_one_label_idx = np.where( mnist_test_labels == label_value )[0]
+#    odd_test_label_idx = np.append(odd_test_label_idx, test_refined_one_label_idx)
+#
+#odd_refined_images = mnist_train_images[odd_label_idx, :]
+##odd_refined_labels = two_class_labels[0]*np.ones((odd_refined_images.shape[0]), dtype=np.uint8)
+#odd_test_refined_images = mnist_test_images[odd_test_label_idx, :]
+##odd_test_refined_labels = two_class_labels[0]*np.ones((odd_test_refined_images.shape[0]), dtype=np.uint8)
+
+
 train_refined_images = mnist_train_images[train_refined_label_idx, :]
 train_refined_labels = mnist_train_labels[train_refined_label_idx]
 test_refined_images = mnist_test_images[test_refined_label_idx, :]
 test_refined_labels = mnist_test_labels[test_refined_label_idx]
 
-f = h5py.File('original_data.h5', "w")
+f = h5py.File('../data/original_data.h5', "w")
 f.create_dataset("train_refined_images", dtype='float32', data=train_refined_images)
 f.create_dataset("train_refined_labels", dtype='uint8', data=train_refined_labels)
 f.create_dataset("test_refined_images", dtype='float32', data=test_refined_images)

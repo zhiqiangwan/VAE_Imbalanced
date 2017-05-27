@@ -22,7 +22,7 @@ import matplotlib.pyplot as plt
 #local application/library specific imports
 
 #input data processing
-input_h5 = 'original_data.h5'
+input_h5 = '../data/original_data.h5'
 with h5py.File(input_h5,'r') as hf:
     tem = hf.get('train_refined_images')
     train_refined_images = np.array(tem) 
@@ -33,8 +33,8 @@ with h5py.File(input_h5,'r') as hf:
     tem = hf.get('test_refined_labels')
     test_refined_labels = np.array(tem)
 
-num_classes = 2
-image_shape_for_train = (-1, 28*28)#(-1, 28, 28, 1)     
+num_classes = 10
+image_shape_for_train = (-1, 28*28)#(-1, 28, 28, 1)  #   
 image_train = np.reshape(train_refined_images, image_shape_for_train)
 label_train = keras.utils.to_categorical(train_refined_labels, num_classes)
 image_test = np.reshape(test_refined_images, image_shape_for_train)
