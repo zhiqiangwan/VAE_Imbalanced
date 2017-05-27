@@ -18,6 +18,8 @@ from keras.layers import Conv2D, MaxPooling2D
 from keras import backend as K
 import h5py
 import matplotlib.pyplot as plt
+import sklearn.metrics as sk_metric
+import pandas as pd
 
 #local application/library specific imports
 
@@ -75,4 +77,9 @@ model.compile(loss=keras.losses.categorical_crossentropy,
 model.fit(image_train, label_train, batch_size=batch_size, epochs=epochs,
           verbose=1, validation_data=(image_test, label_test))
 #score = model.evaluate(image_test, label_test, verbose=0)
+predict_output = np.argmax( model.predict(image_test), axis=1 )
+
+groundtruth_pd = pd.Series(test_refined_labels, name="groundtruth")
+pred_pd = pd.Series(predict_output, name="predicted")
+df_confusion = pd.crosstab(groundtruth_pd, pred_pd, margins=True)
 
