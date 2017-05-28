@@ -15,7 +15,7 @@ from scipy.misc import imsave
 from tensorflow.examples.tutorials.mnist import input_data
 from tensorflow.contrib.learn.python.learn.datasets.mnist import DataSet
 import h5py
-#from progressbar import ETA, Bar, Percentage, ProgressBar
+import matplotlib.pyplot as plt
 
 from vae import VAE
 from gan import GAN
@@ -68,14 +68,14 @@ for idx, label_value in enumerate(refined_label):
     train_refined_labels = mnist_train_labels[refined_one_label_idx]
 #import matplotlib.pyplot as plt
 #
-#plt.imshow(np.reshape(gener_image_per_label[100,:], (28, 28)),)
+#plt.imshow(np.reshape(gener_image[6000,:], (28, 28)),)
 
     assert FLAGS.model in ['vae', 'gan']
     if FLAGS.model == 'vae':
         model = VAE(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate, FLAGS.generate_size)
     elif FLAGS.model == 'gan':
-        model = GAN(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate)
-    
+        model = GAN(FLAGS.hidden_size, FLAGS.batch_size, FLAGS.learning_rate, FLAGS.generate_size)
+   
     num_train = train_refined_images.shape[0]
     loss_list = []
     iterations = 0
@@ -94,14 +94,14 @@ for idx, label_value in enumerate(refined_label):
            loss_list.append(loss_value)
            
            iterations += 1
-           if iterations % 50 == 0:
+           if iterations % 500 == 0:
                print("======================================")
                print("Epoch", epoch, "Iteration", iterations) 
                
                print ("Training Loss:", np.mean(loss_list))
                print ("\n")
                loss_list = []      
-        if epoch % 40 == 0 or epoch == (FLAGS.max_epoch-1):       
+        if epoch % 400 == 0 or epoch == (FLAGS.max_epoch-1):       
             model.generate_and_save_images(
                 FLAGS.batch_size, FLAGS.working_directory)
     
@@ -114,8 +114,8 @@ for idx, label_value in enumerate(refined_label):
     else:
         gener_image = np.concatenate( (gener_image, gener_image_per_label), axis=0)
         gener_label = np.concatenate( (gener_label, gener_labels_per_label), axis=0 )
-    #gener_image = np.append(gener_image, gener_image_per_label, axis=0)
-    #gener_label = np.append(gener_label, train_refined_labels, axis=0)
+
+    tf.reset_default_graph() 
 
 if FLAGS.model == 'vae':    
     f = h5py.File('../data/VAE_generated_data.h5', "w")
