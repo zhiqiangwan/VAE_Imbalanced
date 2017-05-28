@@ -23,6 +23,8 @@ import pandas as pd
 
 #local application/library specific imports
 
+
+GENERATE_DATA_TYPE = 'copy' # 'VAE' #
 #input data processing
 input_h5 = '../data/original_data.h5'
 with h5py.File(input_h5,'r') as hf:
@@ -35,12 +37,20 @@ with h5py.File(input_h5,'r') as hf:
     tem = hf.get('test_refined_labels')
     test_refined_labels = np.array(tem)
 
-generate_h5 = '../data/VAE_generated_data.h5'
-with h5py.File(generate_h5,'r') as hf:
-    tem = hf.get('VAE_images')
-    generate_images = np.array(tem)
-    tem = hf.get('VAE_labels')
-    generate_labels = np.array(tem)    
+if GENERATE_DATA_TYPE == 'copy':
+    generate_h5 = '../data/copy_data.h5'
+    with h5py.File(generate_h5,'r') as hf:
+        tem = hf.get('copy_images')
+        generate_images = np.array(tem)
+        tem = hf.get('copy_labels')
+        generate_labels = np.array(tem)      
+elif GENERATE_DATA_TYPE == 'VAE':    
+    generate_h5 = '../data/VAE_generated_data.h5'
+    with h5py.File(generate_h5,'r') as hf:
+        tem = hf.get('VAE_images')
+        generate_images = np.array(tem)
+        tem = hf.get('VAE_labels')
+        generate_labels = np.array(tem)    
     
 num_classes = 10
 image_shape_for_train = (-1, 28*28)#(-1, 28, 28, 1)   # 
