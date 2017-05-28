@@ -29,7 +29,7 @@ flags.DEFINE_integer("max_epoch", 1000, "max epoch")
 flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./", "")
 flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
-flags.DEFINE_string("model", "vae", "gan or vae")
+flags.DEFINE_string("model", "gan", "gan or vae")
 flags.DEFINE_string("generate_size", 4600, "batch size of generated images")
 
 FLAGS = flags.FLAGS
@@ -46,7 +46,7 @@ mnist_test_images = mnist_all.test.images
 mnist_test_labels = mnist_all.test.labels
 
 refined_label = [0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_train_per_label = [400]
+num_train_per_label = [384] #should be times of batch_size, 128*3=384
 
 
 #gener_image = np.array([], dtype = np.float32)
@@ -94,14 +94,14 @@ for idx, label_value in enumerate(refined_label):
            loss_list.append(loss_value)
            
            iterations += 1
-           if iterations % 500 == 0:
+           if iterations % 50 == 0:
                print("======================================")
                print("Epoch", epoch, "Iteration", iterations) 
                
                print ("Training Loss:", np.mean(loss_list))
                print ("\n")
                loss_list = []      
-        if epoch % 400 == 0 or epoch == (FLAGS.max_epoch-1):       
+        if epoch % 40 == 0 or epoch == (FLAGS.max_epoch-1):       
             model.generate_and_save_images(
                 FLAGS.batch_size, FLAGS.working_directory)
     
@@ -117,9 +117,14 @@ for idx, label_value in enumerate(refined_label):
     #gener_image = np.append(gener_image, gener_image_per_label, axis=0)
     #gener_label = np.append(gener_label, train_refined_labels, axis=0)
 
-f = h5py.File('../data/VAE_generated_data.h5', "w")
-f.create_dataset("VAE_images", dtype='float32', data=gener_image)
-f.create_dataset("VAE_labels", dtype='uint8', data=gener_label)
-f.close()
-
+if FLAGS.model == 'vae':    
+    f = h5py.File('../data/VAE_generated_data.h5', "w")
+    f.create_dataset("VAE_images", dtype='float32', data=gener_image)
+    f.create_dataset("VAE_labels", dtype='uint8', data=gener_label)
+    f.close()
+elif FLAGS.model == 'gan':
+    f = h5py.File('../data/GAN_generated_data.h5', "w")
+    f.create_dataset("GAN_images", dtype='float32', data=gener_image)
+    f.create_dataset("GAN_labels", dtype='uint8', data=gener_label)
+    f.close()    
 #hh = refined_label*np.ones((gener_image.shape[0]), dtype=np.uint8)

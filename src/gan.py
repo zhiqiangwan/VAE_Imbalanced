@@ -14,7 +14,7 @@ from utils import discriminator, decoder
 from generator import Generator
 
 def concat_elu(inputs):
-    return tf.nn.elu(tf.concat(3, [-inputs, inputs]))
+    return tf.nn.elu(tf.concat([-inputs, inputs], 3))
 
 class GAN(Generator):
 
@@ -30,6 +30,9 @@ class GAN(Generator):
                 D_params_num = len(tf.trainable_variables())
                 G = decoder(tf.random_normal([batch_size, hidden_size]))
                 self.sampled_tensor = G
+                
+            with tf.variable_scope("model", reuse=True):
+                self.sampled_tensor_gener = decoder(tf.random_normal([batch_size, hidden_size]))
 
             with tf.variable_scope("model", reuse=True):
                 D2 = discriminator(G)  # generated examples
@@ -61,8 +64,8 @@ class GAN(Generator):
         Returns:
             Cross entropy loss, positive samples have implicit labels 1, negative 0s
         '''
-        return (losses.sigmoid_cross_entropy(D1, tf.ones(tf.shape(D1))) +
-                losses.sigmoid_cross_entropy(D2, tf.zeros(tf.shape(D1))))
+        return (tf.losses.sigmoid_cross_entropy(D1, tf.ones(tf.shape(D1))) +
+                tf.losses.sigmoid_cross_entropy(D2, tf.zeros(tf.shape(D1))))
 
     def __get_generator_loss(self, D2):
         '''Loss for the genetor. Maximize probability of generating images that
@@ -71,7 +74,7 @@ class GAN(Generator):
         Returns:
             see the paper
         '''
-        return losses.sigmoid_cross_entropy(D2, tf.ones(tf.shape(D2)))
+        return tf.losses.sigmoid_cross_entropy(D2, tf.ones(tf.shape(D2)))
 
     def update_params(self, inputs):
         d_loss_value = self.sess.run(self.train_discrimator, {
