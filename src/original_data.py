@@ -15,6 +15,7 @@ from scipy.misc import imsave
 from tensorflow.examples.tutorials.mnist import input_data
 from tensorflow.contrib.learn.python.learn.datasets.mnist import DataSet
 import h5py
+import matplotlib.pyplot as plt
 #from progressbar import ETA, Bar, Percentage, ProgressBar
 
 
@@ -32,6 +33,9 @@ flags.DEFINE_string("generate_size", 5600, "batch size of generated images")
 
 FLAGS = flags.FLAGS
 
+directory_generate_data = '../data_128/' #'../data/' #
+if not os.path.exists(directory_generate_data):
+    os.makedirs(directory_generate_data)
 
 data_directory = os.path.join(FLAGS.working_directory, "MNIST")
 if not os.path.exists(data_directory):
@@ -44,7 +48,9 @@ mnist_test_images = mnist_all.test.images
 mnist_test_labels = mnist_all.test.labels
 
 refined_label = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_train_per_label = [400, 5000, 400, 5000, 400, 5000, 400, 5000, 400, 5000]
+num_minority_label = 128
+num_majority_label = 5000
+num_train_per_label = [num_minority_label, num_majority_label]*5
 train_refined_label_idx = np.array([], dtype = np.uint8)
 test_refined_label_idx = np.array([], dtype = np.uint8)
 for idx, label_value in enumerate(refined_label):
@@ -77,14 +83,14 @@ train_refined_labels = mnist_train_labels[train_refined_label_idx]
 test_refined_images = mnist_test_images[test_refined_label_idx, :]
 test_refined_labels = mnist_test_labels[test_refined_label_idx]
 
-f = h5py.File('../data/original_data.h5', "w")
+f = h5py.File(os.path.join(directory_generate_data, 'original_data.h5'), "w")
 f.create_dataset("train_refined_images", dtype='float32', data=train_refined_images)
 f.create_dataset("train_refined_labels", dtype='uint8', data=train_refined_labels)
 f.create_dataset("test_refined_images", dtype='float32', data=test_refined_images)
 f.create_dataset("test_refined_labels", dtype='uint8', data=test_refined_labels)
 f.close()
 
-#import matplotlib.pyplot as plt
 #
-#plt.imshow(np.reshape(test_refined_images[10,:], (28, 28)),)
+#
+#plt.imshow(np.reshape(train_refined_images[500,:], (28, 28)),)
 

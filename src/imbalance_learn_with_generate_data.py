@@ -6,7 +6,7 @@ Created on Thu May 25 14:45:55 2017
 @author: cisa
 """
 #standard library imports
-
+import os
 
 #related third party imports
 import tensorflow as tf
@@ -24,9 +24,11 @@ import pandas as pd
 #local application/library specific imports
 
 
-GENERATE_DATA_TYPE = 'copy' # 'VAE' #
+directory_generate_data = '../data/' #'../data_128/' #
+
+GENERATE_DATA_TYPE = 'VAE' #'copy' # 'GAN'#
 #input data processing
-input_h5 = '../data/original_data.h5'
+input_h5 = os.path.join(directory_generate_data, 'original_data.h5')
 with h5py.File(input_h5,'r') as hf:
     tem = hf.get('train_refined_images')
     train_refined_images = np.array(tem) 
@@ -38,20 +40,27 @@ with h5py.File(input_h5,'r') as hf:
     test_refined_labels = np.array(tem)
 
 if GENERATE_DATA_TYPE == 'copy':
-    generate_h5 = '../data/copy_data.h5'
+    generate_h5 = os.path.join(directory_generate_data, 'copy_data.h5') 
     with h5py.File(generate_h5,'r') as hf:
         tem = hf.get('copy_images')
         generate_images = np.array(tem)
         tem = hf.get('copy_labels')
         generate_labels = np.array(tem)      
 elif GENERATE_DATA_TYPE == 'VAE':    
-    generate_h5 = '../data/VAE_generated_data.h5'
+    generate_h5 = os.path.join(directory_generate_data, 'VAE_generated_data.h5')
     with h5py.File(generate_h5,'r') as hf:
         tem = hf.get('VAE_images')
         generate_images = np.array(tem)
         tem = hf.get('VAE_labels')
         generate_labels = np.array(tem)    
-    
+elif GENERATE_DATA_TYPE == 'GAN':
+    generate_h5 = os.path.join(directory_generate_data, 'GAN_generated_data.h5')
+    with h5py.File(generate_h5,'r') as hf:
+        tem = hf.get('GAN_images')
+        generate_images = np.array(tem)
+        tem = hf.get('GAN_labels')
+        generate_labels = np.array(tem)         
+        
 num_classes = 10
 image_shape_for_train = (-1, 28*28)#(-1, 28, 28, 1)   # 
 image_train = np.reshape( np.concatenate( (train_refined_images, generate_images), axis=0) , image_shape_for_train)
@@ -66,7 +75,7 @@ label_test = keras.utils.to_categorical(test_refined_labels, num_classes)
 input_shape = image_shape_for_train[1:]#(28, 28, 1)
 
 batch_size = 128
-epochs = 12
+epochs = 20
 
 #######CNN########
 #model = Sequential()

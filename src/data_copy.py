@@ -34,6 +34,9 @@ flags.DEFINE_string("generate_size", 4600, "batch size of generated images")
 
 FLAGS = flags.FLAGS
 
+directory_generate_data = '../data_128/' #'../data/' #
+if not os.path.exists(directory_generate_data):
+    os.makedirs(directory_generate_data)
 
 data_directory = os.path.join(FLAGS.working_directory, "MNIST")
 if not os.path.exists(data_directory):
@@ -46,7 +49,7 @@ mnist_test_images = mnist_all.test.images
 mnist_test_labels = mnist_all.test.labels
 
 refined_label = [0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_train_per_label = [400]
+num_train_per_label = [128]
 
 
 #gener_image = np.array([], dtype = np.float32)
@@ -59,7 +62,7 @@ for idx, label_value in enumerate(refined_label):
 #
 #plt.imshow(np.reshape(gener_image_per_label[500,:], (28, 28)),)    
 
-    gener_image_per_label = np.tile( train_refined_images, (12, 1) )
+    gener_image_per_label = np.tile( train_refined_images, (int(FLAGS.generate_size/num_train_per_label[0]), 1) )
     gener_labels_per_label = label_value * np.ones((gener_image_per_label.shape[0]), dtype=np.uint8)
     if idx == 0:
         gener_image = gener_image_per_label[:]
@@ -70,9 +73,11 @@ for idx, label_value in enumerate(refined_label):
     #gener_image = np.append(gener_image, gener_image_per_label, axis=0)
     #gener_label = np.append(gener_label, train_refined_labels, axis=0)
 
-f = h5py.File('../data/copy_data.h5', "w")
+f = h5py.File(os.path.join(directory_generate_data, 'copy_data.h5'), "w")
 f.create_dataset("copy_images", dtype='float32', data=gener_image)
 f.create_dataset("copy_labels", dtype='uint8', data=gener_label)
 f.close()
 
 #hh = refined_label*np.ones((gener_image.shape[0]), dtype=np.uint8)
+
+

@@ -6,7 +6,7 @@ Created on Thu May 25 14:45:55 2017
 @author: cisa
 """
 #standard library imports
-
+import os
 
 #related third party imports
 import tensorflow as tf
@@ -23,8 +23,11 @@ import pandas as pd
 
 #local application/library specific imports
 
+
+directory_generate_data = '../data/' #'../data_128/' #
+
 #input data processing
-input_h5 = '../data/original_data.h5'
+input_h5 = os.path.join(directory_generate_data, 'original_data.h5')
 with h5py.File(input_h5,'r') as hf:
     tem = hf.get('train_refined_images')
     train_refined_images = np.array(tem) 
@@ -47,7 +50,7 @@ label_test = keras.utils.to_categorical(test_refined_labels, num_classes)
 input_shape = image_shape_for_train[1:]#(28, 28, 1)
 
 batch_size = 128
-epochs = 12
+epochs = 20
 
 #######CNN########
 #model = Sequential()

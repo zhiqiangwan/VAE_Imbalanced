@@ -25,15 +25,18 @@ logging = tf.logging
 
 flags.DEFINE_integer("batch_size", 128, "batch size")
 flags.DEFINE_integer("updates_per_epoch", 1000, "number of updates per epoch")
-flags.DEFINE_integer("max_epoch", 1000, "max epoch")
+flags.DEFINE_integer("max_epoch", 10000, "max epoch")
 flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./", "")
 flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
-flags.DEFINE_string("model", "gan", "gan or vae")
+flags.DEFINE_string("model", "vae", "gan or vae")
 flags.DEFINE_string("generate_size", 4600, "batch size of generated images")
 
 FLAGS = flags.FLAGS
 
+directory_generate_data = '../data_128/' #'../data/' #
+if not os.path.exists(directory_generate_data):
+    os.makedirs(directory_generate_data)
 
 data_directory = os.path.join(FLAGS.working_directory, "MNIST")
 if not os.path.exists(data_directory):
@@ -46,7 +49,7 @@ mnist_test_images = mnist_all.test.images
 mnist_test_labels = mnist_all.test.labels
 
 refined_label = [0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_train_per_label = [384] #should be times of batch_size, 128*3=384
+num_train_per_label = [128] #should be times of batch_size, 128*3=384
 
 
 #gener_image = np.array([], dtype = np.float32)
@@ -68,7 +71,7 @@ for idx, label_value in enumerate(refined_label):
     train_refined_labels = mnist_train_labels[refined_one_label_idx]
 #import matplotlib.pyplot as plt
 #
-#plt.imshow(np.reshape(gener_image[6000,:], (28, 28)),)
+#plt.imshow(np.reshape(gener_image[3550+4600*4,:], (28, 28)),)
 
     assert FLAGS.model in ['vae', 'gan']
     if FLAGS.model == 'vae':
@@ -118,13 +121,15 @@ for idx, label_value in enumerate(refined_label):
     tf.reset_default_graph() 
 
 if FLAGS.model == 'vae':    
-    f = h5py.File('../data/VAE_generated_data.h5', "w")
+    f = h5py.File(os.path.join(directory_generate_data, 'VAE_generated_data.h5'), "w")
     f.create_dataset("VAE_images", dtype='float32', data=gener_image)
     f.create_dataset("VAE_labels", dtype='uint8', data=gener_label)
     f.close()
 elif FLAGS.model == 'gan':
-    f = h5py.File('../data/GAN_generated_data.h5', "w")
+    f = h5py.File(os.path.join(directory_generate_data, 'GAN_generated_data.h5'), "w")
     f.create_dataset("GAN_images", dtype='float32', data=gener_image)
     f.create_dataset("GAN_labels", dtype='uint8', data=gener_label)
     f.close()    
 #hh = refined_label*np.ones((gener_image.shape[0]), dtype=np.uint8)
+
+
