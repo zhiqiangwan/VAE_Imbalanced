@@ -23,10 +23,12 @@ import pandas as pd
 
 #local application/library specific imports
 
-
-directory_generate_data = '../data/affnist/data_384/' #
+#'../data/affnist/data_50/' #'../data/affnist/data_384/' #
+directory_generate_data = '../data/affnist/data_128/' 
 
 GENERATE_DATA_TYPE = 'VAE' # 'copy' #'GAN'#
+vae_hidden_size = 128
+VAE_file = 'VAE_hidden_%d_generated_data.h5' % (vae_hidden_size) # 'VAE_generated_data.h5' #
 #input data processing
 input_h5 = os.path.join(directory_generate_data, 'original_data.h5')
 with h5py.File(input_h5,'r') as hf:
@@ -47,7 +49,7 @@ if GENERATE_DATA_TYPE == 'copy':
         tem = hf.get('copy_labels')
         generate_labels = np.array(tem)      
 elif GENERATE_DATA_TYPE == 'VAE':    
-    generate_h5 = os.path.join(directory_generate_data, 'VAE_generated_data.h5')
+    generate_h5 = os.path.join(directory_generate_data, VAE_file)
     with h5py.File(generate_h5,'r') as hf:
         tem = hf.get('VAE_images')
         generate_images = np.array(tem)
@@ -63,8 +65,8 @@ elif GENERATE_DATA_TYPE == 'GAN':
         
 num_classes = 10
 batch_size = 128
-epochs = 20
-CLASSIFY_TYPE = 'CNN'  # MLP or CNN
+epochs = 50
+CLASSIFY_TYPE = 'CNN'  #'MLP'# MLP or CNN
 
 if CLASSIFY_TYPE == 'MLP':
     image_train = np.concatenate( (train_refined_images, generate_images), axis=0)
@@ -75,6 +77,8 @@ if CLASSIFY_TYPE == 'MLP':
     model = Sequential()
     model.add(Dense(126, activation='relu', input_shape=(784,)))
     model.add(Dropout(0.2))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dropout(0.2))     
     model.add(Dense(num_classes, activation='softmax'))
     model.summary()
   

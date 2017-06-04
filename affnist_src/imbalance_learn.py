@@ -24,8 +24,8 @@ import matplotlib.pyplot as plt
 
 #local application/library specific imports
 
-
-directory_generate_data = '../data/affnist/data_1152/' #'../data/affnist/data_384/' #
+#'../data/affnist/data_50/' #'../data/affnist/data_384/' #'../data/affnist/data_1152/' #
+directory_generate_data = '../data/affnist/data_128/'
 
 #input data processing
 input_h5 = os.path.join(directory_generate_data, 'original_data.h5')
@@ -41,8 +41,8 @@ with h5py.File(input_h5,'r') as hf:
 
 num_classes = 10
 batch_size = 128
-epochs = 20
-CLASSIFY_TYPE = 'CNN'  # MLP or CNN
+epochs = 50
+CLASSIFY_TYPE = 'CNN'  #'MLP'# MLP or CNN
 
 if CLASSIFY_TYPE == 'MLP':
     image_train = train_refined_images
@@ -53,6 +53,8 @@ if CLASSIFY_TYPE == 'MLP':
     model = Sequential()
     model.add(Dense(126, activation='relu', input_shape=(784,)))
     model.add(Dropout(0.2))
+    model.add(Dense(64, activation='relu'))
+    model.add(Dropout(0.2))    
     model.add(Dense(num_classes, activation='softmax'))
     model.summary()
   

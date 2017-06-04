@@ -28,13 +28,14 @@ flags.DEFINE_integer("updates_per_epoch", 1000, "number of updates per epoch")
 flags.DEFINE_integer("max_epoch", 10000, "max epoch")
 flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./", "")
-flags.DEFINE_integer("hidden_size", 128*3, "size of the hidden VAE unit")
+flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
 flags.DEFINE_string("model", "vae", "gan or vae")
 flags.DEFINE_string("generate_size", 4600, "batch size of generated images")
 
 FLAGS = flags.FLAGS
 
-directory_generate_data = '../data/affnist/data_384/' #
+#'../data/affnist/data_50/' #'../data/affnist/data_384/' #
+directory_generate_data = '../data/affnist/data_128/' #
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 
@@ -110,7 +111,7 @@ for idx, label_value in enumerate(refined_label):
     tf.reset_default_graph() 
 
 if FLAGS.model == 'vae':    
-    f = h5py.File(os.path.join(directory_generate_data, 'VAE_generated_data.h5'), "w")
+    f = h5py.File(os.path.join(directory_generate_data, 'VAE_hidden_%d_generated_data.h5' % (FLAGS.hidden_size)), "w")
     f.create_dataset("VAE_images", dtype='float32', data=gener_image)
     f.create_dataset("VAE_labels", dtype='uint8', data=gener_label)
     f.close()
