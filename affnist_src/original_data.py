@@ -21,6 +21,11 @@ import keras
 from keras.datasets import cifar10
 from keras import backend as K
 
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto(log_device_placement=True)
+config.gpu_options.allow_growth = True
+set_session(tf.Session(config=config))
+
 import glob
 import scipy.io as spio
 
@@ -38,8 +43,8 @@ flags.DEFINE_string("generate_size", 4600, "batch size of generated images")
 
 FLAGS = flags.FLAGS
 
-#'../data/affnist/data_50/' #'../data/affnist/data_384/' #'../data/affnist/data_1152/' #
-directory_generate_data = '../data/affnist/data_128/'
+#'../data/affnist/data_50/' #'../data/affnist/data_1152/' #
+directory_generate_data = '../data/affnist/data_384/' #'../data/affnist/data_128/'
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 
@@ -109,7 +114,7 @@ x_test = x_test / 255.0
 
 
 refined_label = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_minority_label = 128#50#384#1152#
+num_minority_label = 384#128#50#1152#
 num_majority_label = 5000
 num_train_per_label = [num_minority_label, num_majority_label]*5
 train_refined_label_idx = np.array([], dtype = np.uint8)

@@ -77,10 +77,10 @@ class GAN(Generator):
         '''
         return losses.sigmoid_cross_entropy(D2, tf.ones(tf.shape(D2)))
 
-    def update_params(self, inputs):
+    def update_params(self, inputs, generator_update_freq):
         d_loss_value = self.sess.run(self.train_discrimator, {
             self.input_tensor: inputs})
+        for k in range(generator_update_freq):
+            g_loss_value = self.sess.run(self.train_generator)            
 
-        g_loss_value = self.sess.run(self.train_generator)
-
-        return g_loss_value
+        return g_loss_value, d_loss_value

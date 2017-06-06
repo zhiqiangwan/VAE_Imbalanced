@@ -21,12 +21,17 @@ import matplotlib.pyplot as plt
 import sklearn.metrics as sk_metric
 import pandas as pd
 
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto(log_device_placement=True)
+config.gpu_options.allow_growth = True
+set_session(tf.Session(config=config))
+
 #local application/library specific imports
 
-#'../data/affnist/data_50/' #'../data/affnist/data_384/' #
-directory_generate_data = '../data/affnist/data_128/' 
+#'../data/affnist/data_50/' #
+directory_generate_data = '../data/affnist/data_384/' #'../data/affnist/data_128/' 
 
-GENERATE_DATA_TYPE = 'VAE' # 'copy' #'GAN'#
+GENERATE_DATA_TYPE = 'GAN'#'VAE' #'copy' # 
 vae_hidden_size = 128
 VAE_file = 'VAE_hidden_%d_generated_data.h5' % (vae_hidden_size) # 'VAE_generated_data.h5' #
 #input data processing
@@ -62,57 +67,61 @@ elif GENERATE_DATA_TYPE == 'GAN':
         generate_images = np.array(tem)
         tem = hf.get('GAN_labels')
         generate_labels = np.array(tem)         
+
+#plt.imshow(np.reshape(generate_images[2+4600*4,:], (28, 28)))
         
 num_classes = 10
 batch_size = 128
 epochs = 50
 CLASSIFY_TYPE = 'CNN'  #'MLP'# MLP or CNN
 
-if CLASSIFY_TYPE == 'MLP':
-    image_train = np.concatenate( (train_refined_images, generate_images), axis=0)
-    label_train = keras.utils.to_categorical(np.concatenate( (train_refined_labels, generate_labels) ), num_classes)
-    image_test = test_refined_images
-    label_test = keras.utils.to_categorical(test_refined_labels, num_classes)
+with tf.device('/gpu:1'):
+
+    if CLASSIFY_TYPE == 'MLP':
+        image_train = np.concatenate( (train_refined_images, generate_images), axis=0)
+        label_train = keras.utils.to_categorical(np.concatenate( (train_refined_labels, generate_labels) ), num_classes)
+        image_test = test_refined_images
+        label_test = keras.utils.to_categorical(test_refined_labels, num_classes)
+        
+        model = Sequential()
+        model.add(Dense(126, activation='relu', input_shape=(784,)))
+        model.add(Dropout(0.2))
+        model.add(Dense(64, activation='relu'))
+        model.add(Dropout(0.2))     
+        model.add(Dense(num_classes, activation='softmax'))
+        model.summary()
+      
+    elif CLASSIFY_TYPE == 'CNN':    
+        image_shape_for_train = (-1, 28, 28, 1)  #   
+        image_train = np.reshape( np.concatenate( (train_refined_images, generate_images), axis=0) , image_shape_for_train)
+        label_train = keras.utils.to_categorical( np.concatenate( (train_refined_labels, generate_labels) ) , num_classes)
+        image_test = np.reshape(test_refined_images, image_shape_for_train)
+        label_test = keras.utils.to_categorical(test_refined_labels, num_classes)
+        
+        input_shape = image_shape_for_train[1:]#(28, 28, 1)       
     
-    model = Sequential()
-    model.add(Dense(126, activation='relu', input_shape=(784,)))
-    model.add(Dropout(0.2))
-    model.add(Dense(64, activation='relu'))
-    model.add(Dropout(0.2))     
-    model.add(Dense(num_classes, activation='softmax'))
-    model.summary()
-  
-elif CLASSIFY_TYPE == 'CNN':    
-    image_shape_for_train = (-1, 28, 28, 1)  #   
-    image_train = np.reshape( np.concatenate( (train_refined_images, generate_images), axis=0) , image_shape_for_train)
-    label_train = keras.utils.to_categorical( np.concatenate( (train_refined_labels, generate_labels) ) , num_classes)
-    image_test = np.reshape(test_refined_images, image_shape_for_train)
-    label_test = keras.utils.to_categorical(test_refined_labels, num_classes)
+        model = Sequential()
+        model.add(Conv2D(32, kernel_size=(3, 3),
+                         activation='relu',
+                         input_shape=input_shape))
+        model.add(Conv2D(64, (3, 3), activation='relu'))
+        model.add(MaxPooling2D(pool_size=(2, 2)))
+        model.add(Dropout(0.25))
+        model.add(Flatten())
+        model.add(Dense(128, activation='relu'))
+        model.add(Dropout(0.5))
+        model.add(Dense(num_classes, activation='softmax'))
+        model.summary()    
     
-    input_shape = image_shape_for_train[1:]#(28, 28, 1)       
-
-    model = Sequential()
-    model.add(Conv2D(32, kernel_size=(3, 3),
-                     activation='relu',
-                     input_shape=input_shape))
-    model.add(Conv2D(64, (3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-    model.add(Flatten())
-    model.add(Dense(128, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(num_classes, activation='softmax'))
-    model.summary()    
-
-
-#plt.imshow(image_train[1100])
-
-model.compile(loss=keras.losses.categorical_crossentropy,
-              optimizer=keras.optimizers.Adadelta(),
-              metrics=['accuracy'])
-
-model.fit(image_train, label_train, batch_size=batch_size, epochs=epochs,
-          verbose=1, validation_data=(image_test, label_test))
+    
+    #plt.imshow(image_train[1100])
+    
+    model.compile(loss=keras.losses.categorical_crossentropy,
+                  optimizer=keras.optimizers.Adadelta(),
+                  metrics=['accuracy'])
+    
+    model.fit(image_train, label_train, batch_size=batch_size, epochs=epochs,
+              verbose=1, validation_data=(image_test, label_test))
 #score = model.evaluate(image_test, label_test, verbose=0)
 predict_output = np.argmax( model.predict(image_test), axis=1 )
 

@@ -17,6 +17,11 @@ from tensorflow.contrib.learn.python.learn.datasets.mnist import DataSet
 import h5py
 import matplotlib.pyplot as plt
 
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto(log_device_placement=True)
+config.gpu_options.allow_growth = True
+set_session(tf.Session(config=config))
+
 
 from vae import VAE
 from gan import GAN
@@ -37,7 +42,7 @@ flags.DEFINE_string("generate_size", 4600, "batch size of generated images")
 
 FLAGS = flags.FLAGS
 
-directory_generate_data = '../data/affnist/data_50/' #'../data/affnist/data_384/' #
+directory_generate_data = '../data/affnist/data_384/' #'../data/affnist/data_50/' #
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
     
@@ -51,7 +56,7 @@ with h5py.File(input_h5,'r') as hf:
 
 
 refined_label = [0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_train_per_label = [50]
+num_train_per_label = [384]
 
 
 #gener_image = np.array([], dtype = np.float32)
