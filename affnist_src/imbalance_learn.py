@@ -30,7 +30,7 @@ set_session(tf.Session(config=config))
 #local application/library specific imports
 
 #'../data/affnist/data_50/' #'../data/affnist/data_1152/' #
-directory_generate_data = '../data/affnist/data_384/' #'../data/affnist/data_128/'
+directory_generate_data = '../data/affnist/data_50/' #'../data/affnist/data_50/label_0/' #'../data/affnist/data_384/' #'../data/affnist/data_128/'
 
 #input data processing
 input_h5 = os.path.join(directory_generate_data, 'original_data.h5')

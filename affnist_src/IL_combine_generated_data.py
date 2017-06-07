@@ -29,9 +29,10 @@ set_session(tf.Session(config=config))
 #local application/library specific imports
 
 #'../data/affnist/data_50/' #
-directory_generate_data = '../data/affnist/data_50/label_9/' #'../data/affnist/data_384/' #'../data/affnist/data_128/' 
+directory_generate_data = '../data/affnist/data_50/' #'../data/affnist/data_384/' #'../data/affnist/data_128/' 
 
-GENERATE_DATA_TYPE = 'VAE' #'GAN'#'copy' # 
+GENERATE_DATA_TYPE = 'copy' #'VAE' #'GAN'# 
+COMBINED_LABEL = ['label_0', 'label_1', 'label_2', 'label_3', 'label_4']
 vae_hidden_size = 128
 VAE_file = 'VAE_hidden_%d_generated_data.h5' % (vae_hidden_size) # 'VAE_generated_data.h5' #
 #input data processing
@@ -46,29 +47,62 @@ with h5py.File(input_h5,'r') as hf:
     tem = hf.get('test_refined_labels')
     test_refined_labels = np.array(tem)
 
-if GENERATE_DATA_TYPE == 'copy':
-    generate_h5 = os.path.join(directory_generate_data, 'copy_data.h5') 
-    with h5py.File(generate_h5,'r') as hf:
-        tem = hf.get('copy_images')
-        generate_images = np.array(tem)
-        tem = hf.get('copy_labels')
-        generate_labels = np.array(tem)      
-elif GENERATE_DATA_TYPE == 'VAE':    
-    generate_h5 = os.path.join(directory_generate_data, VAE_file)
-    with h5py.File(generate_h5,'r') as hf:
-        tem = hf.get('VAE_images')
-        generate_images = np.array(tem)
-        tem = hf.get('VAE_labels')
-        generate_labels = np.array(tem)    
-elif GENERATE_DATA_TYPE == 'GAN':
-    generate_h5 = os.path.join(directory_generate_data, 'GAN_generated_data.h5')
-    with h5py.File(generate_h5,'r') as hf:
-        tem = hf.get('GAN_images')
-        generate_images = np.array(tem)
-        tem = hf.get('GAN_labels')
-        generate_labels = np.array(tem)         
-
-#plt.imshow(np.reshape(generate_images[2+4600*4,:], (28, 28)))
+if type(COMBINED_LABEL) is list:
+    if GENERATE_DATA_TYPE == 'copy':
+        generate_h5 = os.path.join(directory_generate_data, 'copy_data.h5') 
+        with h5py.File(generate_h5,'r') as hf:
+            tem = hf.get('copy_images')
+            generate_images = np.array(tem)
+            tem = hf.get('copy_labels')
+            generate_labels = np.array(tem)      
+    elif GENERATE_DATA_TYPE == 'VAE': 
+        for i, label_file in enumerate(COMBINED_LABEL):
+            generate_h5 = os.path.join(directory_generate_data, label_file, VAE_file)
+            if i == 0:
+                with h5py.File(generate_h5,'r') as hf:
+                    tem = hf.get('VAE_images')
+                    generate_images = np.array(tem)
+                    tem = hf.get('VAE_labels')
+                    generate_labels = np.array(tem)
+                    
+            else:
+                with h5py.File(generate_h5,'r') as hf:
+                    tem = hf.get('VAE_images')
+                    generate_images = np.concatenate( (generate_images, np.array(tem)), axis=0 ) 
+                    tem = hf.get('VAE_labels')
+                    generate_labels = np.concatenate( (generate_labels, np.array(tem) ), axis=0 )                
+           
+    elif GENERATE_DATA_TYPE == 'GAN':
+        generate_h5 = os.path.join(directory_generate_data, 'GAN_generated_data.h5')
+        with h5py.File(generate_h5,'r') as hf:
+            tem = hf.get('GAN_images')
+            generate_images = np.array(tem)
+            tem = hf.get('GAN_labels')
+            generate_labels = np.array(tem)         
+else:
+    if GENERATE_DATA_TYPE == 'copy':
+        generate_h5 = os.path.join(directory_generate_data, 'copy_data.h5') 
+        with h5py.File(generate_h5,'r') as hf:
+            tem = hf.get('copy_images')
+            generate_images = np.array(tem)
+            tem = hf.get('copy_labels')
+            generate_labels = np.array(tem)      
+    elif GENERATE_DATA_TYPE == 'VAE':    
+        generate_h5 = os.path.join(directory_generate_data, VAE_file)
+        with h5py.File(generate_h5,'r') as hf:
+            tem = hf.get('VAE_images')
+            generate_images = np.array(tem)
+            tem = hf.get('VAE_labels')
+            generate_labels = np.array(tem)    
+    elif GENERATE_DATA_TYPE == 'GAN':
+        generate_h5 = os.path.join(directory_generate_data, 'GAN_generated_data.h5')
+        with h5py.File(generate_h5,'r') as hf:
+            tem = hf.get('GAN_images')
+            generate_images = np.array(tem)
+            tem = hf.get('GAN_labels')
+            generate_labels = np.array(tem)         
+    
+#plt.imshow(np.reshape(generate_images[2122+2450*4,:], (28, 28)))
         
 num_classes = 10
 batch_size = 128

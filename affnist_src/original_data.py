@@ -39,12 +39,12 @@ flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./", "")
 flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
 flags.DEFINE_string("model", "vae", "gan or vae")
-flags.DEFINE_string("generate_size", 4600, "batch size of generated images")
+flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
 
 FLAGS = flags.FLAGS
 
 #'../data/affnist/data_50/' #'../data/affnist/data_1152/' #
-directory_generate_data = '../data/affnist/data_384/' #'../data/affnist/data_128/'
+directory_generate_data = '../data/affnist/data_50/' # '../data/affnist/data_50/label_9/' #'../data/affnist/data_128/'
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 
@@ -114,9 +114,9 @@ x_test = x_test / 255.0
 
 
 refined_label = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_minority_label = 384#128#50#1152#
-num_majority_label = 5000
-num_train_per_label = [num_minority_label, num_majority_label]*5
+num_minority_label = 50#128#50#1152#
+num_majority_label = 2500
+num_train_per_label = [num_minority_label]*5 + [num_majority_label]*5  #+ [num_majority_label]*1
 train_refined_label_idx = np.array([], dtype = np.uint8)
 test_refined_label_idx = np.array([], dtype = np.uint8)
 for idx, label_value in enumerate(refined_label):

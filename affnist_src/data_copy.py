@@ -38,11 +38,11 @@ flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./", "")
 flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
 flags.DEFINE_string("model", "vae", "gan or vae")
-flags.DEFINE_string("generate_size", 4600, "batch size of generated images")
+flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
 
 FLAGS = flags.FLAGS
 
-directory_generate_data = '../data/affnist/data_384/' #'../data/affnist/data_50/' #
+directory_generate_data = '../data/affnist/data_50/' #'../data/affnist/data_384/' #
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
     
@@ -55,8 +55,8 @@ with h5py.File(input_h5,'r') as hf:
     y_train = np.array(tem)    
 
 
-refined_label = [0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_train_per_label = [384]
+refined_label = [0, 1, 2, 3, 4]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+num_train_per_label = [50]
 
 
 #gener_image = np.array([], dtype = np.float32)
