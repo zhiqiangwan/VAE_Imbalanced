@@ -17,6 +17,11 @@ from tensorflow.contrib.learn.python.learn.datasets.mnist import DataSet
 import h5py
 import matplotlib.pyplot as plt
 
+from keras.backend.tensorflow_backend import set_session
+config = tf.ConfigProto()
+config.gpu_options.allow_growth = True
+set_session(tf.Session(config=config))
+
 from vae import VAE
 from gan import GAN
 
@@ -25,53 +30,46 @@ logging = tf.logging
 
 flags.DEFINE_integer("batch_size", 128, "batch size")
 flags.DEFINE_integer("updates_per_epoch", 1000, "number of updates per epoch")
-flags.DEFINE_integer("max_epoch", 10000, "max epoch")
+flags.DEFINE_integer("max_epoch", 8000, "max epoch")
 flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./", "")
 flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
 flags.DEFINE_string("model", "vae", "gan or vae")
-flags.DEFINE_string("generate_size", 4600, "batch size of generated images")
+flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
+
+
 
 FLAGS = flags.FLAGS
 
-directory_generate_data = '../data_128/' #'../data/' #
+#'../data/affnist/data_50/' #
+directory_generate_data = '../data/cifar/data_50/label_0/' #
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 
-data_directory = os.path.join(FLAGS.working_directory, "MNIST")
-if not os.path.exists(data_directory):
-    os.makedirs(data_directory)
-mnist_all = input_data.read_data_sets(data_directory, one_hot=False, validation_size = 0)
+#data_directory = '../data/affnist/data_384/'
+#if not os.path.exists(data_directory):
+#    os.makedirs(data_directory)
 
-mnist_train_images = mnist_all.train.images
-mnist_train_labels = mnist_all.train.labels
-mnist_test_images = mnist_all.test.images
-mnist_test_labels = mnist_all.test.labels
+#input data processing
+input_h5 = os.path.join(directory_generate_data, 'original_data.h5')
+with h5py.File(input_h5,'r') as hf:
+    tem = hf.get('train_refined_images')
+    x_train = np.array(tem) 
+    tem = hf.get('train_refined_labels')
+    y_train = np.array(tem)
 
-refined_label = [0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_train_per_label = [128] #should be times of batch_size, 128*3=384
+x_train = np.reshape(x_train, (-1, 32*32*3) )     
+#plt.imshow(np.reshape(x_train[10], (32,32,3) ))
 
+refined_label = [0]#[0, 1, 2, 3, 4]#[0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+#num_train_per_label = [384] #should be times of batch_size, 128*3=384                      
 
-#gener_image = np.array([], dtype = np.float32)
-#gener_label = np.array([], dtype = np.uint8) 
 for idx, label_value in enumerate(refined_label):
-#    train_refined_label_idx = np.array([], dtype = np.uint8)
-#    test_refined_label_idx = np.array([], dtype = np.uint8)    
     
-    refined_one_label_idx = np.where( mnist_train_labels == label_value )[0][:num_train_per_label[0]]
-#    train_refined_label_idx = np.append( train_refined_label_idx,  refined_one_label_idx)
-#    test_refined_one_label_idx = np.where( mnist_test_labels == label_value )[0]
-#    test_refined_label_idx = np.append(test_refined_label_idx, test_refined_one_label_idx)
+    refined_one_label_idx = np.where( y_train == label_value )[0]
 
-#    train_refined_images = mnist_train_images[train_refined_label_idx, :]
-#    train_refined_labels = mnist_train_labels[train_refined_label_idx]
-#    test_refined_images = mnist_test_images[test_refined_label_idx, :]
-#    test_refined_labels = mnist_test_labels[test_refined_label_idx]
-    train_refined_images = mnist_train_images[refined_one_label_idx, :]
-    train_refined_labels = mnist_train_labels[refined_one_label_idx]
-#import matplotlib.pyplot as plt
-#
-#plt.imshow(np.reshape(gener_image[3550+4600*4,:], (28, 28)),)
+    train_refined_images = x_train[refined_one_label_idx, :]
+    train_refined_labels = y_train[refined_one_label_idx]
 
     assert FLAGS.model in ['vae', 'gan']
     if FLAGS.model == 'vae':
@@ -81,7 +79,11 @@ for idx, label_value in enumerate(refined_label):
    
     num_train = train_refined_images.shape[0]
     loss_list = []
+    g_loss_list = []
+    d_loss_list = []
     iterations = 0
+    generator_update_freq = 4
+    d_loss_avrag = 10.0
     
     for epoch in range(FLAGS.max_epoch):
     
@@ -92,22 +94,49 @@ for idx, label_value in enumerate(refined_label):
            if end > num_train: end = num_train
            
            images = train_refined_images[trainset_shuffle_index[start:end], :]
-    
-           loss_value = model.update_params(images)
-           loss_list.append(loss_value)
            
-           iterations += 1
-           if iterations % 500 == 0:
-               print("======================================")
-               print("Epoch", epoch, "Iteration", iterations) 
+           if FLAGS.model == 'vae':
+               loss_value = model.update_params(images)
+               loss_list.append(loss_value)           
+               iterations += 1
+               if iterations % 500 == 0:
+                   print("======================================")
+                   print("Epoch", epoch, "Iteration", iterations)                    
+                   print ("Training Loss:", np.mean(loss_list))
+                   print ("\n")
+                   loss_list = []
+           elif FLAGS.model == 'gan':
+               g_loss_value, d_loss_value = model.update_params(images, generator_update_freq)
+               g_loss_list.append(g_loss_value)
+               d_loss_list.append(d_loss_value)
+               iterations += 1
+               if iterations % 100 == 0:
+                   g_loss_avrag = np.mean(g_loss_list)
+                   d_loss_avrag = np.mean(d_loss_list)
+                   print("======================================")
+                   print("Epoch", epoch, "Iteration", iterations)
+                   print ("Training generator Loss:", g_loss_avrag)
+                   print ("Training discriminator Loss:", d_loss_avrag)
+                   generator_update_freq = 10*int(g_loss_avrag/d_loss_avrag)
+                   if generator_update_freq > 30:
+                       generator_update_freq = 30
+                   elif generator_update_freq < 4:
+                       generator_update_freq = 4
+                   print(generator_update_freq)
+                   print ("\n")
+                   g_loss_list = []
+                   d_loss_list = []
+                   
+                   
                
-               print ("Training Loss:", np.mean(loss_list))
-               print ("\n")
-               loss_list = []      
         if epoch % 400 == 0 or epoch == (FLAGS.max_epoch-1):       
             model.generate_and_save_images(
                 FLAGS.batch_size, FLAGS.working_directory)
-    
+        
+        if FLAGS.model == 'gan':
+            if d_loss_avrag < 0.04:
+                break
+            
     
     gener_image_per_label = model.sess.run(model.sampled_tensor_gener)
     gener_labels_per_label = label_value * np.ones((gener_image_per_label.shape[0]), dtype=np.uint8)
@@ -121,7 +150,7 @@ for idx, label_value in enumerate(refined_label):
     tf.reset_default_graph() 
 
 if FLAGS.model == 'vae':    
-    f = h5py.File(os.path.join(directory_generate_data, 'VAE_generated_data.h5'), "w")
+    f = h5py.File(os.path.join(directory_generate_data, 'VAE_hidden_%d_generated_data.h5' % (FLAGS.hidden_size)), "w")
     f.create_dataset("VAE_images", dtype='float32', data=gener_image)
     f.create_dataset("VAE_labels", dtype='uint8', data=gener_label)
     f.close()
@@ -131,5 +160,5 @@ elif FLAGS.model == 'gan':
     f.create_dataset("GAN_labels", dtype='uint8', data=gener_label)
     f.close()    
 #hh = refined_label*np.ones((gener_image.shape[0]), dtype=np.uint8)
-
+#plt.imshow(np.reshape(gener_image[1111,:], (32, 32, 3)),)
 

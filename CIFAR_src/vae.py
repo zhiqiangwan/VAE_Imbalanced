@@ -18,7 +18,7 @@ class VAE(Generator):
 
     def __init__(self, hidden_size, batch_size, learning_rate, generate_size):
         self.input_tensor = tf.placeholder(
-            tf.float32, [None, 28 * 28])
+            tf.float32, [None, 32*32*3])
         
         with arg_scope([layers.conv2d, layers.conv2d_transpose],
                        activation_fn=tf.nn.elu,

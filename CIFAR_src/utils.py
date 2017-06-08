@@ -6,12 +6,12 @@ def encoder(input_tensor, output_size):
     '''Create encoder network.
 
     Args:
-        input_tensor: a batch of flattened images [batch_size, 28*28]
+        input_tensor: a batch of flattened images [batch_size, 32, 32, 3]
 
     Returns:
         A tensor that expresses the encoder network
     '''
-    net = tf.reshape(input_tensor, [-1, 28, 28, 1])
+    net = tf.reshape(input_tensor, [-1, 32, 32, 3])
     net = layers.conv2d(net, 32, 5, stride=2)
     net = layers.conv2d(net, 64, 5, stride=2)
     net = layers.conv2d(net, 128, 5, stride=2, padding='VALID')
@@ -43,14 +43,15 @@ def decoder(input_tensor):
 
     Returns:
         A tensor that expresses the decoder network
-    '''
+    ''' 
 
     net = tf.expand_dims(input_tensor, 1)
     net = tf.expand_dims(net, 1)
-    net = layers.conv2d_transpose(net, 128, 3, padding='VALID')
-    net = layers.conv2d_transpose(net, 64, 5, padding='VALID')
+    net = layers.conv2d_transpose(net, 128, 2, padding='VALID')
+    net = layers.conv2d_transpose(net, 64, 3, stride=2)    
     net = layers.conv2d_transpose(net, 32, 5, stride=2)
+    net = layers.conv2d_transpose(net, 16, 5, stride=2)
     net = layers.conv2d_transpose(
-        net, 1, 5, stride=2, activation_fn=tf.nn.sigmoid)
+        net, 3, 5, stride=2, activation_fn=tf.nn.sigmoid)
     net = layers.flatten(net)
     return net

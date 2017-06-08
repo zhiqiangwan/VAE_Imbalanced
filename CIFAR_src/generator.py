@@ -28,4 +28,4 @@ class Generator(object):
                 os.makedirs(imgs_folder)
 
             imsave(os.path.join(imgs_folder, '%d.png') % k,
-                   imgs[k].reshape(28, 28))
+                   imgs[k].reshape(32, 32, 3))
