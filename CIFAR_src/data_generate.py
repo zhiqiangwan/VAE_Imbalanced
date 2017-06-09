@@ -35,14 +35,14 @@ flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./", "")
 flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
 flags.DEFINE_string("model", "vae", "gan or vae")
-flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
+flags.DEFINE_string("generate_size", 4500, "batch size of generated images")
 
 
 
 FLAGS = flags.FLAGS
 
 #'../data/affnist/data_50/' #
-directory_generate_data = '../data/cifar/data_50/label_0/' #
+directory_generate_data = '../data/cifar/data_500/' #'../data/cifar/data_50/label_0/' #
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 
@@ -61,7 +61,7 @@ with h5py.File(input_h5,'r') as hf:
 x_train = np.reshape(x_train, (-1, 32*32*3) )     
 #plt.imshow(np.reshape(x_train[10], (32,32,3) ))
 
-refined_label = [0]#[0, 1, 2, 3, 4]#[0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+refined_label = [0, 1, 2, 3, 4]#[0]#[0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 #num_train_per_label = [384] #should be times of batch_size, 128*3=384                      
 
 for idx, label_value in enumerate(refined_label):
@@ -81,6 +81,8 @@ for idx, label_value in enumerate(refined_label):
     loss_list = []
     g_loss_list = []
     d_loss_list = []
+    vae_loss_list = []
+    reconstruc_loss_list = []
     iterations = 0
     generator_update_freq = 4
     d_loss_avrag = 10.0
@@ -97,14 +99,22 @@ for idx, label_value in enumerate(refined_label):
            
            if FLAGS.model == 'vae':
                loss_value = model.update_params(images)
-               loss_list.append(loss_value)           
+#               vae_loss_value = model.calculate_vae_cost(images)
+#               reconstruc_loss_value = model.calculate_reconstruction_cost(images)
+               loss_list.append(loss_value) 
+#               vae_loss_list.append(vae_loss_value)
+#               reconstruc_loss_list.append(reconstruc_loss_value)
                iterations += 1
                if iterations % 500 == 0:
                    print("======================================")
                    print("Epoch", epoch, "Iteration", iterations)                    
                    print ("Training Loss:", np.mean(loss_list))
+#                   print ("Training vae Loss:", np.mean(vae_loss_list))
+#                   print ("Training reconstruction Loss:", np.mean(reconstruc_loss_list))
                    print ("\n")
                    loss_list = []
+                   vae_loss_list = []
+                   reconstruc_loss_list = []
            elif FLAGS.model == 'gan':
                g_loss_value, d_loss_value = model.update_params(images, generator_update_freq)
                g_loss_list.append(g_loss_value)
@@ -160,5 +170,5 @@ elif FLAGS.model == 'gan':
     f.create_dataset("GAN_labels", dtype='uint8', data=gener_label)
     f.close()    
 #hh = refined_label*np.ones((gener_image.shape[0]), dtype=np.uint8)
-#plt.imshow(np.reshape(gener_image[1111,:], (32, 32, 3)),)
+#plt.imshow(np.reshape(gener_image[1,:], (32, 32, 3)),)
 

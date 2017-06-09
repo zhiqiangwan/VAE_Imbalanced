@@ -29,9 +29,9 @@ set_session(tf.Session(config=config))
 #local application/library specific imports
 
 #'../data/affnist/data_50/' #
-directory_generate_data = '../data/cifar/data_50/label_0/' #
+directory_generate_data = '../data/cifar/data_500/' #'../data/cifar/data_50/label_0/' #
 
-GENERATE_DATA_TYPE = 'copy' #'VAE' # 'GAN'#
+GENERATE_DATA_TYPE = 'VAE' # 'copy' #'GAN'#
 vae_hidden_size = 128
 VAE_file = 'VAE_hidden_%d_generated_data.h5' % (vae_hidden_size) # 'VAE_generated_data.h5' #
 #input data processing
@@ -68,7 +68,7 @@ elif GENERATE_DATA_TYPE == 'GAN':
         tem = hf.get('GAN_labels')
         generate_labels = np.array(tem)         
 
-#plt.imshow(np.reshape(generate_images[2+4600*4,:], (28, 28)))
+#plt.imshow(np.reshape(generate_images[4+4500*0,:], (32, 32, 3)))
 
 generate_images = np.reshape(generate_images, (-1, 32, 32, 3))
 generate_labels = np.expand_dims(generate_labels, 1)

@@ -42,11 +42,11 @@ class VAE(Generator):
                 self.sampled_tensor_gener = decoder(tf.random_normal(
                     [generate_size, hidden_size]))
 
-        vae_loss = self.__get_vae_cost(mean, stddev)
-        rec_loss = self.__get_reconstruction_cost(
+        self.vae_loss = self.__get_vae_cost(mean, stddev)
+        self.rec_loss = self.__get_reconstruction_cost(
             output_tensor, self.input_tensor)
 
-        loss = vae_loss + rec_loss
+        loss = self.vae_loss + self.rec_loss
         self.train = layers.optimize_loss(loss, tf.contrib.framework.get_or_create_global_step(
         ), learning_rate=learning_rate, optimizer='Adam', update_ops=[])
 
@@ -88,3 +88,13 @@ class VAE(Generator):
             Current loss value
         '''
         return self.sess.run(self.train, {self.input_tensor: input_tensor})
+
+    def calculate_vae_cost(self, input_tensor):
+        
+        return self.sess.run( self.vae_loss, {self.input_tensor: input_tensor} )
+
+    def calculate_reconstruction_cost(self, input_tensor):
+        
+        return self.sess.run( self.rec_loss, {self.input_tensor: input_tensor} )
+    
+    
