@@ -44,7 +44,7 @@ flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
 FLAGS = flags.FLAGS
 
 #'../data/affnist/data_50/' #'../data/affnist/data_1152/' #
-directory_generate_data = '../data/mnist/data_50/' # '../data/affnist/data_50/label_9/' #'../data/affnist/data_128/'
+directory_generate_data = '../data/mnist/data_50_2500/' # '../data/affnist/data_50/label_9/' #'../data/affnist/data_128/'
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
    
@@ -78,6 +78,7 @@ for idx, label_value in enumerate(refined_label):
 
 
 
+
 train_refined_images = x_train[train_refined_label_idx, :]
 train_refined_labels = y_train[train_refined_label_idx]
 test_refined_images = x_test[test_refined_label_idx, :]
@@ -94,4 +95,8 @@ f.close()
 #
 #
 #plt.imshow(np.reshape(train_refined_images[4+50*6,:], (28, 28)),)
-
+#for idx, label_value in enumerate(refined_label):
+#    aa = np.where( y_train == label_value )[0]
+#    print(len(aa))
+    
+    

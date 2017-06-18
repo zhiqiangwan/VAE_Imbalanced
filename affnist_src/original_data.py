@@ -44,7 +44,7 @@ flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
 FLAGS = flags.FLAGS
 
 #'../data/affnist/data_50/' #'../data/affnist/data_1152/' #
-directory_generate_data = '../data/affnist/data_50/' # '../data/affnist/data_50/label_9/' #'../data/affnist/data_128/'
+directory_generate_data = '../data/affnist/data_50_2500/' # '../data/affnist/data_50/label_9/' #'../data/affnist/data_128/'
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 
@@ -89,8 +89,18 @@ def _todict(matobj):
     return dict
     
 dataset = loadmat(os.path.join( dataset_path, '1.mat' ))
-y_train = dataset['affNISTdata']['label_int']
-x_train_0 = dataset['affNISTdata']['image'].transpose() 
+y_train_mat1 = dataset['affNISTdata']['label_int']
+x_train_0_mat1 = dataset['affNISTdata']['image'].transpose() 
+
+dataset = loadmat(os.path.join( dataset_path, '2.mat' ))
+y_train_mat2 = dataset['affNISTdata']['label_int']
+x_train_0_mat2 = dataset['affNISTdata']['image'].transpose() 
+
+x_train_0 = np.concatenate((x_train_0_mat1, x_train_0_mat2), axis=0)
+y_train =  np.concatenate((y_train_mat1, y_train_mat2), axis=0)
+#plt.imshow(np.reshape(x_train_0[-2,:], (40, 40)))
+#y_train = dataset['affNISTdata']['label_int']
+#x_train_0 = dataset['affNISTdata']['image'].transpose() 
 x_train = np.zeros((x_train_0.shape[0], 28*28), dtype=np.uint8)  
 
 for k in range(x_train.shape[0]):
@@ -114,7 +124,7 @@ x_test = x_test / 255.0
 
 
 refined_label = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
-num_minority_label = 50#128#50#1152#
+num_minority_label = 50
 num_majority_label = 2500
 num_train_per_label = [num_minority_label]*5 + [num_majority_label]*5  #+ [num_majority_label]*1
 train_refined_label_idx = np.array([], dtype = np.uint8)
@@ -143,4 +153,8 @@ f.close()
 #
 #
 #plt.imshow(np.reshape(train_refined_images[500,:], (28, 28)),)
+for idx, label_value in enumerate(refined_label):
+    aa = np.where( y_train == label_value )[0]
+    print(len(aa))
+
 

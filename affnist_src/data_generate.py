@@ -42,7 +42,7 @@ flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
 FLAGS = flags.FLAGS
 
 #'../data/affnist/data_50/' #
-directory_generate_data = '../data/affnist/data_50/label_9/' #'../data/affnist/data_384/' #'../data/affnist/data_128/' #
+directory_generate_data = '../data/affnist/data_50_2500/' #'../data/affnist/data_384/' #'../data/affnist/data_128/' #
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 
@@ -59,7 +59,7 @@ with h5py.File(input_h5,'r') as hf:
     y_train = np.array(tem)
      
 
-refined_label = [9]#[0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+refined_label = [0, 1, 2, 3, 4]#[9]#[0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 #num_train_per_label = [384] #should be times of batch_size, 128*3=384                      
 
 for idx, label_value in enumerate(refined_label):

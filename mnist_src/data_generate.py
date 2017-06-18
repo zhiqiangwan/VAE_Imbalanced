@@ -42,7 +42,7 @@ flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
 FLAGS = flags.FLAGS
 
 #'../data/affnist/data_50/' #
-directory_generate_data = '../data/mnist/data_50/' #'../data/affnist/data_384/' #'../data/affnist/data_128/' #
+directory_generate_data = '../data/mnist/data_50_2500/' #'../data/affnist/data_384/' #'../data/affnist/data_128/' #
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 

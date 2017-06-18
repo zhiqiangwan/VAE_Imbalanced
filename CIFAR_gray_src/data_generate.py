@@ -35,14 +35,14 @@ flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./", "")
 flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
 flags.DEFINE_string("model", "vae", "gan or vae")
-flags.DEFINE_string("generate_size", 4500, "batch size of generated images")
+flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
 
 
 
 FLAGS = flags.FLAGS
 
 #'../data/affnist/data_50/' #
-directory_generate_data = '../data/cifar_gray/data_500/' #'../data/cifar/data_50/label_0/' #
+directory_generate_data = '../data/cifar_gray/data_50/' #'../data/cifar/data_50/label_0/' #
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 
