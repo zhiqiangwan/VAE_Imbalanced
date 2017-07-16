@@ -21,6 +21,7 @@ import matplotlib.pyplot as plt
 import sklearn.metrics as sk_metric
 import pandas as pd
 from imblearn import metrics
+import pickle
 
 from keras.backend.tensorflow_backend import set_session
 config = tf.ConfigProto(log_device_placement=True)
@@ -31,8 +32,9 @@ set_session(tf.Session(config=config))
 
 #'../data/affnist/data_50/' #
 directory_generate_data = '../data/mnist/data_50_2500/' #'../data/affnist/data_384/' #'../data/affnist/data_128/' 
+result_path = './results/'
 
-GENERATE_DATA_TYPE = 'VAE' #'copy' # 'GAN'#
+GENERATE_DATA_TYPE = 'VAE' #'GAN'#'copy' # 
 vae_hidden_size = 128
 VAE_file = 'VAE_hidden_%d_generated_data.h5' % (vae_hidden_size) # 'VAE_generated_data.h5' #
 #input data processing
@@ -69,7 +71,8 @@ elif GENERATE_DATA_TYPE == 'GAN':
         tem = hf.get('GAN_labels')
         generate_labels = np.array(tem)         
 
-#plt.imshow(np.reshape(generate_images[2+4600*4,:], (28, 28)))
+#plt.imshow(np.reshape(generate_images[192+2450*4,:], (28, 28)), cmap='gray')
+#plt.axis('off')
         
 num_classes = 10
 batch_size = 128
@@ -86,7 +89,7 @@ red_list = []
 pre_list = []
 
 with tf.device('/gpu:1'):
-    for metric_loop in range(10):     
+    for metric_loop in range(100):     
 
         if CLASSIFY_TYPE == 'MLP':
             image_train = np.concatenate( (train_refined_images, generate_images), axis=0)
@@ -132,7 +135,7 @@ with tf.device('/gpu:1'):
                       metrics=['accuracy'])
         
         model.fit(image_train, label_train, batch_size=batch_size, epochs=epochs,
-                  verbose=1, validation_data=(image_test, label_test))
+                  verbose=0, validation_data=(image_test, label_test))
         accuracy_list.append(model.evaluate(image_test, label_test, verbose=0)[1]) 
         predict_output = np.argmax( model.predict(image_test), axis=1 )
         imb_results = metrics.classification_report_imbalanced(test_refined_labels, predict_output, digits=4)
@@ -164,5 +167,11 @@ averg_iba = sum(iba_list)/float(len(iba_list))
 
 print('averg_acc:', averg_acc, 'averg_pre:', averg_pre, 'averg_red:', averg_red, 
       'averg_spe:', averg_spe, 'averg_f1:', averg_f1, 'averg_geo:', averg_geo, 'averg_iba:', averg_iba)
+
+with open( os.path.join(result_path, 'VAE_result_100runs.pkl'), 'w' ) as f:
+    pickle.dump([accuracy_list, pre_list, red_list, spe_list, f1_list, geo_list, iba_list], f)
+
+with open( os.path.join(result_path, 'VAE_result_100runs.pkl'), 'r' ) as f:
+    VAE_results = pickle.load(f)
 
 

@@ -28,13 +28,13 @@ from gan import GAN
 flags = tf.flags
 logging = tf.logging
 
-flags.DEFINE_integer("batch_size", 128, "batch size")
+flags.DEFINE_integer("batch_size", 50, "batch size")
 flags.DEFINE_integer("updates_per_epoch", 1000, "number of updates per epoch")
 flags.DEFINE_integer("max_epoch", 8000, "max epoch")
 flags.DEFINE_float("learning_rate", 1e-2, "learning rate")
 flags.DEFINE_string("working_directory", "./", "")
 flags.DEFINE_integer("hidden_size", 128, "size of the hidden VAE unit")
-flags.DEFINE_string("model", "vae", "gan or vae")
+flags.DEFINE_string("model", "gan", "gan or vae")
 flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
 
 
@@ -42,7 +42,7 @@ flags.DEFINE_string("generate_size", 2450, "batch size of generated images")
 FLAGS = flags.FLAGS
 
 #'../data/affnist/data_50/' #
-directory_generate_data = '../data/mnist/data_50_2500/' #'../data/affnist/data_384/' #'../data/affnist/data_128/' #
+directory_generate_data = '../data/mnist/data_50_2500/' 
 if not os.path.exists(directory_generate_data):
     os.makedirs(directory_generate_data)
 

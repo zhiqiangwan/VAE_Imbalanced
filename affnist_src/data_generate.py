@@ -59,7 +59,7 @@ with h5py.File(input_h5,'r') as hf:
     y_train = np.array(tem)
      
 
-refined_label = [0, 1, 2, 3, 4]#[9]#[0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
+refined_label = [0, 1, 2, 3, 4]#[0]#[9]#[0, 2, 4, 6, 8]#[0, 1, 2, 3, 4, 5, 6, 7, 8, 9]
 #num_train_per_label = [384] #should be times of batch_size, 128*3=384                      
 
 for idx, label_value in enumerate(refined_label):
@@ -159,4 +159,14 @@ elif FLAGS.model == 'gan':
     f.close()    
 #hh = refined_label*np.ones((gener_image.shape[0]), dtype=np.uint8)
 #plt.imshow(np.reshape(gener_image[1+4600*4,:], (28, 28)),)
+
+#aa = model.sess.run(model.one_sampled_tensor_gener)
+#plt.imshow(np.reshape(aa, (28, 28)),)
+#similarity = model.sess.run([model.similarity], {model.input_tensor: images})
+#print(similarity)
+#aa1, aa2, aa3 = model.sess.run([model.one_sample_encoded, model.one_sample_encoded_tile, model.similarity], {model.input_tensor: images})
+
+
+#aa_loss = model.sess.run(model.one_sample_vae_loss)
+#print(aa_loss)
 

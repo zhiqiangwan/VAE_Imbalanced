@@ -41,7 +41,16 @@ class VAE(Generator):
             with tf.variable_scope("model", reuse=True) as scope1:    
                 self.sampled_tensor_gener = decoder(tf.random_normal(
                     [generate_size, hidden_size]))
-
+            with tf.variable_scope("model", reuse=True) as scope2:    
+                self.one_sampled_tensor_gener = decoder(tf.random_normal(
+                    [1, hidden_size]))
+                self.one_sample_encoded = encoder(self.one_sampled_tensor_gener, hidden_size * 2)
+                self.one_sample_encoded_tile = tf.tile(self.one_sample_encoded, [50,1])
+                self.similarity = tf.reduce_sum(tf.multiply(self.one_sample_encoded_tile, encoded)) 
+#                self.one_sample_mean = self.one_sample_encoded[:, :hidden_size]
+#                self.one_sample_stddev = tf.sqrt(tf.exp(self.one_sample_encoded[:, hidden_size:]))
+#                self.one_sample_vae_loss = self.__get_vae_cost(self.one_sample_mean, self.one_sample_stddev)
+                
         vae_loss = self.__get_vae_cost(mean, stddev)
         rec_loss = self.__get_reconstruction_cost(
             output_tensor, self.input_tensor)
